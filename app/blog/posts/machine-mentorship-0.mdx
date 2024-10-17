@@ -1,0 +1,189 @@
+---
+title: 'Machine Mentorship, Exercise 0: Zigging and Zagging'
+publishedAt: '2024-10-17'
+summary: 'Tackling a LeetCode problem that involes processing a string through a unique zig-zag movement pattern to create a scrambled version. '
+---
+Welcome to Machine Mentorship where we explore approaching, hacking on and ultimately solving coding problems. After we reach our solutions we feed them to an AI LLM for feedback. 
+
+During this process, we walk through interesting concepts we encounter on our coding journeys in an effort to better solidify our learnings. 
+
+## Intro
+
+I was out of town with some friends over the weekend and one of them who is aware of my current effort to break into engineering asked how the coding work is going.
+
+ It turns out he already talked to his engineering buddy for advice on my behalf and of the many useful tidbits provided, one that stuck out was solving Leetcode Medium problems consistently within ~40 minutes. 
+
+I’d been in a bit of a downturn motivationally and this simple nudge reminded me how beneficial tackling coding problems from Exercism, Leetcode, and Codewars is. 
+
+Part of the reason my motivation slowed down is because I was between projects and didn’t know where to focus. Coding problems might range from bite size to whole entrees but they have a distinct beginning, middle and end. It’s a clear direction to drive in.
+
+Deciding to get back into it I navigated to LeetCode and basically threw a dart at my computer screen to select a random Medium problem. I highly recommend [Exercism](https://exercism.org/) and [Codewars](https://www.codewars.com/) but since Leetcode is an industry standard, it was time to re-explore.
+
+## The Problem
+
+I landed on [Zigzag conversion](https://leetcode.com/problems/zigzag-conversion/description/) and it looked interesting at a glance. Please take the time to check out the problem and even take a stab at it before continuing if you’d like – it helps get the most out of this post.
+
+The gist of this problem is we’re starting with some legible string and ending up with a scrambled string that is the concatenation of the original string processed in a unique zigzag pattern. You’ll have to check the problem to understand the pattern visually.
+
+## Approaching the Problem
+
+We start with some string `s` and `numRows` which are the number of rows in our zigzag pattern. The letters in the string are placed into each row in a downward vertical fashion. When we reach the bottom row, the letters are placed diagonally upward into each row until we get back to the first row. The pattern then repeats, filling letters downward until we reach the bottom row and back up diagonally.
+
+The first thing that came to mind is that each row can be represented by an array. Arrays don’t care what order we push into them so we can manage the order of the letters in each row out of the box, then mash the arrays together to get our output string.
+
+We’re also going to need some sort of loop to place the letters of our string `s` in each row of our array, and some values to handle our location, probably some sort of `row` and `column` values. 
+
+We need to keep in mind the key point of the problem which is the bouncing effect of the algorithm. We start at row 0, move down to the bottom row, then we bounce back up moving laterally until we get back to 0. We then again bounce straight downward and repeat this process. 
+
+## Hacking On the Problem
+
+The first order of business was creating an array of arrays based on the value passed in via numRows. Some `Array.from()` syntax I used in the past came to mind that would be a fit here:
+
+`let rows = Array.from({length: numRows}, () => [])`
+
+Not to spend too much time on one line of code but when I saw this for the first time I was intrigued – I’d never seen `Array.from()` used in this way. 
+
+The first parameter accepted in `Array.from()` is an `array-like object` including iterable objects such as Arrays, Maps and Sets. Looking closely, we also see “objects with a `.length` property” as [another acceptable parameter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from).
+
+Other arrays and data structures like `Map` and `Set` have `.length` properties as part of their object prototype. When we pass one of those data structures as a parameter, `Array.from()` just grabs that existing length property to know how many times to execute our `mapFn()`. 
+
+Standard Objects don’t have a length property – however, we must keep in mind that Arrays, Maps, and Sets are also objects. By manually adding a `.length` property to an object, `Array.from()` just accesses it when looking for the length property it usually expects from an Array, Map, or Set. I’m not sure why this feels like a cool hack despite that it’s right there in the docs but it does.
+
+Anyway, on to the actual functionality of our `convert()` function:
+
+```
+let letters = s.split('') 
+let row = 0
+let column = 0
+
+// while we still have letters to process
+while (letters.length > 0) {
+	arrays[row].push(letters.shift())
+    // increment row, to move down
+    row++
+    // check if we hit the bottom row
+    if (row == numRows) {
+        // go back up to the bottom row, because we hit the bottom
+        row--
+        // another while loop? we need to iterate back up
+        while (row > 0 && letters.length > 0) {
+            row--
+            arrays[row].push(letters.shift())
+        }
+    }
+} 
+```
+Things were getting ugly fast here. Nesting `while()` loops means managing the value of `row` in multiple scopes, far less readable code, and easy pitfalls to poor performance. It’s also toilsome to debug, including an awkward situation where we need to check `letters.length` in multiple `while()` statements because `letters[]` could deplete while moving back up the rows too.
+
+Back to the drawing board – when debugging gets hairier than usual it’s generally a sign that the code isn’t clean and it’s best to revisit the problem statement. 
+
+I thought more about the bouncing behavior of our zigzag pattern. This was the key to our solution. 
+
+It wasn’t necessary to nest loops – we are fine with our one `while()` statement and iterating until all the letters in `letters[]` are gone. We just need to track whether we’re moving up or down and change the direction if we hit the top or bottom row.
+
+Since we’re interested in the binary downward or upward movement, a boolean comes to mind to handle tracking direction. Based on the value of that boolean, we can either increment or decrement the row value.
+
+This is also where I axed the `column` variable noticing it’s useless. After building our loop we can see that `row` is the only value we need to push into the appropriate array for our solution. Our `rows[]` array doesn’t care what horizontal location we’re in. As long as we know our vertical location (row) we can just push the letter in and it’s handled correctly.
+
+## Solutions
+
+## My Solution
+```
+/**
+ * @param {string} s
+ * @param {number} numRows
+ * @return {string}
+ */
+var convert = function(s, numRows) {
+    // just return the string if one row (leetcode test edge case)
+    if (numRows == 1)
+        return s
+
+    let rows = Array.from({length: numRows}, () => [])
+    let letters = s.split('')
+
+    let row = 0
+    let goingDown = false
+
+    while (letters.length > 0) {
+        rows[row].push(letters.shift())
+
+        // if we hit top or bottom, reverse direction
+        if (row == 0 || row == numRows - 1)
+            goingDown = !goingDown
+
+        // increment or decrement row whether going down or up, respectively
+        row += goingDown ? 1 : -1
+    }
+    let output = ''
+    rows.forEach(ele => output += ele.join('') )
+    return output
+}
+
+```
+I was pretty proud of my solution and it passed all tests except for failing an unlisted test that passes in a `numRows` value of 1. This throws a TypeError as at some point we try to push to a row that doesn’t exist when we increment `row`. By simply returning our string when numRows is 1 we pass all tests.
+
+Now that we have something that passes, it’s finally time to leverage our machine mentor and see what the LLM has to say about our solution.
+
+## Machine Solution
+
+Before feeding it, for one, I knew there was a more elegant way to create our `output` string, likely via some combination of `map()` and `join()`. I kind of hacked our current solution together because I just wanted to see if it worked.
+
+I wasn’t quite sure how to avoid the act of iterating, concatenating and joining our arrays in our solution. It’s still `O(N)` using this approach but as the input grows in size, joining/concatenating could still become taxing.
+
+The area I always look to understand and improve for any solution is the performance of our program. Our AI had some interesting feedback:
+
+```
+/** 
+* @param {string} s 
+* @param {number} numRows 
+* @return {string} 
+*/ 
+var convert = function(s, numRows) { 
+    // Edge case: if numRows is 1, no zigzagging is needed. 
+    if (numRows === 1) return s; 
+
+    // Create an array of strings, one for each row. 
+    let rows = Array.from({ length: numRows }, () => ''); 
+    let row = 0; 
+    let goingDown = false; 
+
+    // Loop over each character in the string. 
+    for (let char of s) {
+        rows[row] += char; 
+        // Toggle direction when reaching the top or bottom row. 
+        if (row === 0 || row === numRows - 1) goingDown = !goingDown; 
+        // Move up or down. 
+        row += goingDown ? 1 : -1; 
+    } 
+    // Combine all rows to form the final string. 
+    return rows.join(''); 
+};
+```
+
+The main feedback from our AI is to use a single array and strings for each row instead of using arrays for each row. Take a look at our new `Array.from()` code which generates a string for each row instead of an array. I’d once again overvalued the `Array.prototype` functions and strings are just more efficient here by minimizing memory usage and avoiding the overhead of joining multiple arrays for our solution.
+
+We also no longer split our string `s` into array `letters[]`, which in turn avoids using `Array.shift()`. `shift()` is nifty because it returns the character we want to add to our row while removing it from our `letters[]` array. However, `Array.shift()` actually causes the array we’re shifting to reindex every time we use it. This costs us memory and increases overhead especially when `s` gets large.
+
+Speaking of overvaluing Array.prototype functions, I again overlooked the humble `for()` loop. Most of us know the `in` syntax in `for()` loop applications, i.e. `for (let char in s) {}`. As someone who has spent less time in the trenches, I often forget about the powerful alternative of `of` instead of `in` in `for()` loops which are often useful outside of working with regular objects.
+
+Consider `String.indexOf()` which gets the location of the first occurrence of a character in a string. The index of a string can essentially be thought of as the “key” associated with the character “value” in the string object, at least for purposes of using strings in loops. 
+
+Keeping this in mind, we can use `for (let char of s)` to output the character at the according location of the string. If we were to use `for (let char in s)` as mentioned above, we’d actually get an output of 0, 1, 2, 3, … n, where these numbers are the indexes of the characters in our string.
+
+All of this leads into what feels like a much simpler and more elegant solution. Here we just iterate through the characters in string `s` one by one and append each to the appropriate string in `rows[]`. At that point all we need to do is `.join()` our `rows[]` strings for our output.
+
+## Conclusion
+
+Overall this was another fun one. My favorite problems are ones with simple problem statements that involve more complexity when unraveling the solution, and I think this fits that description. 
+
+Most of my time on this problem was spent debugging and dinking around in broken nested loops – namely, managing the value of `row`, debugging `rows[]` and `letters[]` in the loops, and so forth. 
+
+Eventually I realized that I should probably scrap the nested loops and revisit the problem, which I wish I did sooner. That’s where the idea of using one loop with a boolean to manage the “bouncing” state of our zig zag pattern came into play. Once I started framing the solution this way everything fell into place more quickly.
+
+It’s yet another reminder to take more time in our approach and to try to fully unpack the problem statement before coding. As always, we often don’t fully understand the scope of the problem and its solution until starting to code but this can be mitigated by a more thoughtful approach. 
+
+However, maybe it was the understanding of the zigzag behavior we gained by building and debugging our ugly nested while() loop solution that gave us the perspective we needed going into our second glance at the problem. Such is the balance of planning and approach versus just getting in there and coding.
+
+Thank you for reading and I hope you learned something. I certainly feel like I picked up a lot of great tips in JavaScript syntax and best practices from working on this problem, and from our Machine Mentor.
+
