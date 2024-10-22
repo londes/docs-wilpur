@@ -3,9 +3,9 @@ title: 'Machine Mentorship, Exercise 0: Zigging and Zagging'
 publishedAt: '2024-10-17'
 summary: 'Tackling a LeetCode problem that involes processing a string through a unique zig-zag movement pattern to create a scrambled version. '
 ---
-Welcome to Machine Mentorship where we explore approaching, hacking on and ultimately solving coding problems. After we reach our solutions we feed them to an AI LLM for feedback. 
+Welcome to Machine Mentorship where we approach, hack on and ultimately solve coding problems. After we reach our solutions we feed them to an AI LLM for feedback. 
 
-During this process, we walk through interesting concepts we encounter on our coding journeys in an effort to better solidify our learnings. 
+During this process we walk through interesting concepts we encounter on our coding journeys in an effort to better solidify our learnings. 
 
 ## Intro
 
@@ -15,7 +15,7 @@ I was out of town with some friends over the weekend and one of them who is awar
 
 I’d been in a bit of a downturn motivationally and this simple nudge reminded me how beneficial tackling coding problems from Exercism, Leetcode, and Codewars is. 
 
-Part of the reason my motivation slowed down is because I was between projects and didn’t know where to focus. Coding problems might range from bite size to whole entrees but they have a distinct beginning, middle and end. It’s a clear direction to drive in.
+My motivation had slowed down and I didn't know where to focus. Coding problems might range from bite size to whole entrees but they have a distinct beginning, middle and end. It’s a clear direction to drive in.
 
 Deciding to get back into it I navigated to LeetCode and basically threw a dart at my computer screen to select a random Medium problem. I highly recommend [Exercism](https://exercism.org/) and [Codewars](https://www.codewars.com/) but since Leetcode is an industry standard, it was time to re-explore.
 
@@ -27,7 +27,7 @@ The gist of this problem is we’re starting with some legible string and ending
 
 ## Approaching the Problem
 
-We start with some string `s` and `numRows` which are the number of rows in our zigzag pattern. The letters in the string are placed into each row in a downward vertical fashion. When we reach the bottom row, the letters are placed diagonally upward into each row until we get back to the first row. The pattern then repeats, filling letters downward until we reach the bottom row and back up diagonally.
+We start with some string `s` and `numRows` which is the number of rows in our zigzag pattern. The letters in the string are placed into each row in a downward vertical fashion. When we reach the bottom row, the letters are placed diagonally upward into each row until we get back to the first row. The pattern then repeats, filling letters downward until we reach the bottom row and back up diagonally.
 
 The first thing that came to mind is that each row can be represented by an array. Arrays don’t care what order we push into them so we can manage the order of the letters in each row out of the box, then mash the arrays together to get our output string.
 
@@ -99,9 +99,11 @@ var convert = function(s, numRows) {
     if (numRows == 1)
         return s
 
+    // build our array of arrays, and array of letters from string s
     let rows = Array.from({length: numRows}, () => [])
     let letters = s.split('')
 
+    // set starting row, and set goingDown to false for now because it will swap right away to true with row at 0 
     let row = 0
     let goingDown = false
 
@@ -109,12 +111,13 @@ var convert = function(s, numRows) {
         rows[row].push(letters.shift())
 
         // if we hit top or bottom, reverse direction
-        if (row == 0 || row == numRows - 1)
+        if (row === 0 || row === numRows - 1)
             goingDown = !goingDown
 
         // increment or decrement row whether going down or up, respectively
         row += goingDown ? 1 : -1
     }
+    // create our output string, then make each row into a string and concatenate onto output
     let output = ''
     rows.forEach(ele => output += ele.join('') )
     return output
@@ -165,17 +168,17 @@ The main feedback from our AI is to use a single array and strings for each row 
 
 We also no longer split our string `s` into array `letters[]`, which in turn avoids using `Array.shift()`. `shift()` is nifty because it returns the character we want to add to our row while removing it from our `letters[]` array. However, `Array.shift()` actually causes the array we’re shifting to reindex every time we use it. This costs us memory and increases overhead especially when `s` gets large.
 
-Speaking of overvaluing Array.prototype functions, I again overlooked the humble `for()` loop. Most of us know the `in` syntax in `for()` loop applications, i.e. `for (let char in s) {}`. As someone who has spent less time in the trenches, I often forget about the powerful alternative of `of` instead of `in` in `for()` loops which are often useful outside of working with regular objects.
+Speaking of overvaluing Array.prototype functions, I again overlooked the humble `for()` loop. Most of us know the `in` syntax in `for()` loop applications, i.e. `for (let char in s) {}`. I often forget about the powerful alternative of `of` instead of `in` in `for()` loops which are often useful outside of working with regular objects.
 
 Consider `String.indexOf()` which gets the location of the first occurrence of a character in a string. The index of a string can essentially be thought of as the “key” associated with the character “value” in the string object, at least for purposes of using strings in loops. 
 
 Keeping this in mind, we can use `for (let char of s)` to output the character at the according location of the string. If we were to use `for (let char in s)` as mentioned above, we’d actually get an output of 0, 1, 2, 3, … n, where these numbers are the indexes of the characters in our string.
 
-All of this leads into what feels like a much simpler and more elegant solution. Here we just iterate through the characters in string `s` one by one and append each to the appropriate string in `rows[]`. At that point all we need to do is `.join()` our `rows[]` strings for our output.
+All of this leads into what feels like a much simpler and more elegant solution. Here we just iterate through the characters in string `s` one by one and append each to the appropriate string in `rows[]`. At that point all we need to do is `.join()` our `rows[]` strings to concatenate them for our output.
 
 ## Conclusion
 
-Overall this was another fun one. My favorite problems are ones with simple problem statements that involve more complexity when unraveling the solution, and I think this fits that description. 
+Overall this was another fun one. My favorite problems are ones with simple problem statements that involve more complexity when unraveling the solution. 
 
 Most of my time on this problem was spent debugging and dinking around in broken nested loops – namely, managing the value of `row`, debugging `rows[]` and `letters[]` in the loops, and so forth. 
 
