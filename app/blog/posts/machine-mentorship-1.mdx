@@ -58,7 +58,7 @@ After beating my head against the wall with virtually every way I could think of
 ```
 So long as our linked list param isn’t empty or null, we should expect a `.val` per our `ListNode` definition so we can do something with it, then move on to the next node and repeat until we encounter `null` which is the end of our node list.
 
-Now that we can operate on all of the `.val` values in our lists, all we have to do is flip, add, then take the solution, and un-flip, and return, right? Well, our problem definition expects a `ListNode` object for its solution. 
+Now that we can operate on all of the `.val` values in our lists, all we have to do is flip, add, then take the solution, un-flip, and return, right? Well, our problem definition expects a `ListNode` object for its solution. 
 
 For this reason we have to reconstruct our reverse answer as a connected list of `ListNode`s. Easier said than done, as using our typical spread `{...object}` syntax won’t work because we’re just putting our `ListNode` objects into a regular object at that point. So we have to create a list of `ListNode()` objects and connect them all to build our solution.
 
@@ -158,7 +158,7 @@ Again we learn to think carefully about the problem description that lead into c
 
 Looking back at the machine solution, we see a very simple algorithm. We sum our `.val`s on `l1` and `l2`. Before saving anything, we determine our `carry` value by extracting the tens digit from that operation if there is one. Then we store the ones digit as the value of our next `ListNode` object. We then move to the next `l1` and `l2` `.val` (if there is one) and add our `carry` (if there is one) and add those. We simply repeat this process until we run out of things to add.
 
-The cherry on top is that our solution checker expects a `null` value for `ListNode.next` on the last digit in our solution. Because we’re passing only one parameter into our constructor call e.g. `ListNode(sum % 10)`, each new node we create will have a `null` value for `next` by virtue of our ListNode default params. So once we stop, the last ListNode.next will naturally be `null`. While we’re building, each time we iterate into a new node, we’re overwriting `.next` with our next node so we can just leave the last `null` value alone.
+The cherry on top is that our solution checker expects a `null` value for `ListNode.next` on the last digit in our solution. Because we’re passing only one parameter into our constructor call e.g. `ListNode(sum % 10)`, each new node we create will have a `null` value for `next` by virtue of our `ListNode` default params. For this reason once we stop, the last `ListNode.next` will naturally be `null`. While we’re building, each time we iterate into a new node, we’re overwriting `.next` with our next node so we can just leave the last `null` value alone to indicate the end of the node list.
 
 ## Conclusion
 
