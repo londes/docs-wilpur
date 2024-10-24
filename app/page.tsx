@@ -23,12 +23,6 @@ export default function Page() {
         human knowledge.`}
       </p>
       <p className="mb-4">
-        {`This blog won't be limited to educational material, though.`}
-      </p>
-      <p className="mb-4 italic">
-        {`By writing and posting stuff we have fun.`}
-      </p>
-      <p className="mb-4">
         {`Join me on my coding and math journey, exploring other topics along the way.`}
       </p>
       <div className="my-8">

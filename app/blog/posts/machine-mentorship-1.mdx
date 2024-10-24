@@ -1,0 +1,181 @@
+---
+title: 'Machine Mentorship, Exercise 1: Adding Two Numbers'
+publishedAt: '2024-10-24'
+summary: 'Taking something as simple as addition of two numbers but putting a unique problem-solving based spin on it while introducing a Linked List data structure'
+---
+Welcome to Machine Mentorship where we approach, hack on and ultimately solve coding problems. After we reach our solutions we feed them to an AI LLM for feedback. 
+
+During this process we walk through interesting concepts we encounter on our coding journeys in an effort to better solidify our learnings. 
+
+## Intro
+
+After yet another round of JavaScript, React, Express and Node exercises I figured it was time to jump back into another classic problem solving endeavor. 
+
+It’s getting colder here in the northeast as well, so the idea of staying inside and sipping some hot coffee or tea while getting our butts kicked by math problems is more inviting than in summer time. 
+
+
+## The Problem
+
+Similar to [last week’s entry](https://docs.wilpur.me/blog/machine-mentorship-0), I basically threw a dart at the Medium problems board and found [Add Two Numbers](https://leetcode.com/problems/add-two-numbers/). I once again recommend checking out the problem for context, and even taking a swing at it before diving in. 
+
+In this problem we’re given two Linked Lists consisting of backwards numbers that need to be added, then returning another backwards Linked List of our solution. One thing that is initially a bit tricky is that the Linked Lists in the problem explanation look like arrays but they are definitely not. They are a [series of connected nodes](https://www.freecodecamp.org/news/implementing-a-linked-list-in-javascript/), that are again represented using `array[]` notation in the explanation.
+
+As in last week’s post, there are some simple and fundamental concepts we can focus on here that will drastically improve our approach and subsequently our solution, but I will wait to divulge those until we’re discussing the solution.
+
+
+## Approaching the Problem
+
+Every two or three months I like to re-do my entire JavaScript, React, and Express bootcamp problem sets. Part of the fun is seeing if my code improves in quality and/or if I can solve the tests more quickly. 
+
+If you’re living in a similar world, you’re probably like me and see the backwards lists for the two addends and the backwards list for the solution and immediately gravitate towards the idea of array prototype function abuse. The following explanation of Example 1 in the problem makes it all too easy to assume this is the case:
+
+```
+Input: l1 = [2,4,3], l2 = [5,6,4]
+Output: [7,0,8]
+Explanation: 342 + 465 = 807.
+```
+
+I immediately look at this and think easy, we just `reverse(), join(‘’)`, convert to a number, and add to get our solution. Then we can deconstruct our solution in the opposite direction.
+
+Without getting too far ahead of ourselves and spoiling anything this is the naive solution and it works, but for a variety of reasons, it will not come close to a wonderfully clean and efficient solution provided by our machine mentor.
+
+
+## Hacking On the Problem
+
+The first road block I encountered here was to figure out how to even interact with our `l1` and `l2` linked list (ListNode) objects passed as params to our `addTwoNumbers()` function.
+
+We’re able to access the `list.val` and `list.next` properties of our `l1` and `l2` linked list objects as specified in the `ListNode` definition in the comments of our code block. When we `console.log()` either `l1` or `l2` we get what looks like an array, and `l1.val` and `l1.next` are either an integer or another node (which looks like an array in our `console.log()`).
+
+However, a funny thing happens when we try `console.log(l1.next.val)` – we get an error saying this value is null.
+
+I’ll partially blame the freeCodeCamp article linked above which, while helpful, led me to believe that this was more of a nested object scenario. It looks like we should expect `l1.next` to be an object with a `object.val` and its own `object.next` property. In this case, we should be able to iterate into it using standard object property notation.
+
+After beating my head against the wall with virtually every way I could think of iterating into this unique set of connected objects I noticed that the last `.next` value in every connected list of nodes is `null`. So by checking if we’ve hit `null` for our `.next` value we can tell if we’re at the end or not, and access our `.val` in the meantime to perform our operations:
+
+```
+   currentNode = l1
+   while (currentNode !== null) { // keep going until we hit a null value for currentNode.next
+       console.log(currentNode.val);  // do something with our .val on this node
+       currentNode = currentNode.next;  // move to the next node
+   }
+```
+So long as our linkedList param isn’t empty or null, we should expect a `.val` per our ListNode definition so we can do something with it, then move on to the next node and repeat until we encounter `null` or the end of our node list.
+
+Now that we can operate on all of the `.val` values in our lists, all we have to do is flip, add, then take the solution, and un-flip, and return, right? Well, our problem definition expects a `ListNode` object for its solution. 
+
+For this reason we have to reconstruct our reverse answer as a connected list of `ListNode`s. Easier said than done, as using our typical spread `{...object}` syntax won’t work because we’re just putting our `ListNode` objects into a regular object at that point. So we have to create a list of `ListNode()` objects and connect them all to build our solution.
+
+
+## Solutions
+
+This is one where the LLM’s solution was so many light years beyond mine, and so much more elegant and clean, that I think we are getting true value out of this exercise. Stay tuned for that one, as it harkens back to what we said about the problem statement and recognizing useful tidbits in the problem definition.
+
+## My Solution
+
+```
+/**
+* @param {ListNode} l1
+* @param {ListNode} l2
+* @return {ListNode}
+*/
+
+// un-reverse each linked list's values to get our original number and add them
+// return a linked list for our solution
+var addTwoNumbers = function(l1, l2) {
+   let listsSum = getUnreversedNum(l1) + getUnreversedNum(l2)
+   return buildLinkedList(listsSum)
+};
+
+// grab each value in our linked list and unshift it to an array, reversing them
+// combine values into a Number and return 
+let getUnreversedNum = (linkedList) => {
+   let nodeVals = []
+   let currentNode = linkedList
+   while (currentNode !== null) {
+       nodeVals.unshift(currentNode.val);  // add value to beginning of array to effectively reverse
+       currentNode = currentNode.next;  // move to the next node
+   }
+   return Number(nodeVals.join(''))
+}
+
+// reverse our sum to get the original number, then build a linked list structure with the sum's digits
+let buildLinkedList = ( number ) => {
+   let numberVals = number.toString().split('').reverse()
+   let nodesArr = numberVals.map(ele => new ListNode(Number(ele)))
+   // link nodes
+   nodesArr.forEach((node, idx) => {
+       // if there is a next node, link it. otherwise, do nothing as we want to keep next: null
+       if (nodesArr[idx+1])
+           node.next = nodesArr[idx+1]
+   })
+   return nodesArr[0]
+}
+/** keep in mind our ListNode object definition
+* function ListNode(val, next) {
+*   this.val = (val=== undefined ? 0 : Number(val))
+*   this.next = (next=== undefined ? null : next)
+*}
+*/
+
+```
+My solution felt pretty clean to me. The function `getUnreversedNum()` takes a linked list and returns its `.val` values as a single number, reversed. We add those, then `buildLinkedList()` takes a our sum, reverses it,  and converts it into a set of connected `ListNode` objects, satisfying our criteria. 
+
+You’ll see our `while()` loop logic we talked about before in `getUnreversedNum()`, where we simply use `.unset()` to shove each value into the beginning of an array, essentially reversing the order of the number per the problem description, and return it as a `Number`.
+
+Then in `buildLinkedList()`, we make an array from our solution `Number`, reverse it, then make an array of ListNode objects with our solution’s digits as the `.val`. This works, and without knowing how many of you may be looking at my code and laughing, by comparing it to our LLM you’ll realize there is a whole other level of approach here.
+
+## Machine Solution
+
+```
+var addTwoNumbers = function(l1, l2) {
+   let carry = 0;
+   let dummy = new ListNode(0);
+   let current = dummy;
+
+
+   while (l1 !== null || l2 !== null || carry !== 0) {
+       let sum = (l1?.val || 0) + (l2?.val || 0) + carry;
+       carry = Math.floor(sum / 10);
+       current.next = new ListNode(sum % 10);
+
+
+       current = current.next;
+       l1 = l1 ? l1.next : null;
+       l2 = l2 ? l2.next : null;
+   }
+
+
+   return dummy.next;
+};
+
+```
+There are so many reasons this solution is great. There’s the obvious compactness and elegance compared to my lengthier code.  It’s also just way more efficient and still very readable if you ask me.
+
+Let me say that when I fed my solution to the LLM, it gave me a high score and positive feedback for readability. However, my code suffered from poor performance, which makes sense.
+
+Firstly, when passing very large `ListNode` objects or Numbers to our various functions and then converting these to strings, arrays, then back to strings and/or numbers, things can become very inefficient. The allure of `Array.prototype()` functions is high and it becomes second nature to lean on them but they can often distract from the best path.
+
+Secondly, another thing I struggled with in my solution was starting with a `ListNode` object to return as our solution as per our requirements. I spent time with `reduce()` on an empty object {} accumulator, or using `{...object, val: ‘’, next: ’’}` syntax to build our connected node list but none of this works. Here we start with a dummy `ListNode` with `val: 0, next: null` and build our solution onto `dummy.next`, returning that value as the head in our solution node list. This is the first slick thing about this solution as we’re making it easy to build our solution `ListNode` onto the dummy, which is also already a `ListNode`.
+
+Thirdly, and I would argue most importantly, I invite you to take a step back to our problem description. If you look at the graphic in Example 1 of our problem definition, you’ll notice something. `2 + 5 = 7`, then `4 + 6 = 10` and if we carry the one, we get `3 + 4 + 1 = 8`. This is our backwards solution `7 0 8` already without even reversing anything. I’m kicking myself because I noticed the `4 + 6 = 10` and then carrying the `1` onto the `3 + 4 = 8`, and also that all of the numbers in our solution added up this way, but didn’t think much of it. I was too focused on what JavaScript operations I was going to use. All this talk of “reversing” and “adding the reversed sum” brought my mind to `Array.prototype()` usage such as `.reverse()` and `.reduce()`.
+
+If you think back to learning addition in elementary school, we actually add two larger numbers this way. You start with the smallest digit, and add from the smallest digit you move to the left, or the next largest digit. As you encounter numbers larger than 10, you carry the remainder to add to the sum of the numbers to the left.
+
+By flipping the numbers `342` and `465`, starting by adding 2 and 5, then moving to the next digit, you get the same effect. We’re effectively moving in the same order as adding on paper. Again we learn to think carefully about the problem description that lead into cleaner, more clever solutions. With more observation and forethought, we can see that we are effectively doing standard addition with this flipping both numbers, adding them, and unflipping behavior. 
+
+Looking back at the machine solution, we see a very simple algorithm. We sum our `.val`s on `l1` and `l2`. Before saving anything, we determine our `carry` value by extracting the tens digit from that operation if there is one. Then we store the ones digit as the value of our next `ListNode` object. We then move to the next `l1` and `l2` `.val` (if there is one) and add our `carry` (if there is one) and add those. We simply repeat this process until we run out of things to add.
+
+The cherry on top is that our solution checker expects a `null` value for `ListNode.next` on the last digit in our solution. Because we’re passing only one parameter into our constructor call e.g. `ListNode(sum % 10)`, each new node we create will have a `null` value for `next` by virtue of our ListNode default params. So once we stop, the last ListNode.next will naturally be `null`. While we’re building, each time we iterate into a new node, we’re overwriting `.next` with our next node so we can just leave the last `null` value alone.
+
+## Conclusion
+
+This was a fun exercise and a valuable partner exercise with our LLM. It’s always great to slog through a problem, come up with a functional solution, then get what is essentially an entire paradigm shift for the solution when we ask our AI companion for input. 
+
+It’s yet another reminder to think more carefully about the problem and solution itself versus how to solve the problem. Being observant and thinking about the principles and fundamentals involved in the problem statement will yield more clean, streamlined, and elegant results.
+
+This one was a bit quicker for me, arriving at my solution in about an hour, but there’s nothing to be proud of here really as we see that our entire lens, and our entire angle of approach was just off from the start. We did arrive at something that works, but also something that is probably not suitable for a production code base.
+
+Either way, another fun one that reminds us of the fundamentals of thinking differently while problem solving, and thinking about how to perform simple mathematical operations with code.
+
+Cheers,
+William Purcell
