@@ -9,10 +9,9 @@ During this process we walk through interesting concepts we encounter on our cod
 
 ## Intro
 
-After yet another round of JavaScript, React, Express and Node exercises I figured it was time to jump back into another classic problem solving endeavor. 
+After yet another round of JavaScript, React, Express and Node exercises I figured it was time to jump back into a classic problem solving endeavor. 
 
-It’s getting colder here in the northeast as well, so the idea of staying inside and sipping some hot coffee or tea while getting our butts kicked by math problems is more inviting than in summer time. 
-
+It’s getting colder here in the northeast as well, so the idea of staying inside and sipping some hot coffee or tea while getting our butts kicked by coding problems is more inviting than in summer time. 
 
 ## The Problem
 
@@ -21,7 +20,6 @@ Similar to [last week’s entry](https://docs.wilpur.me/blog/machine-mentorship-
 In this problem we’re given two Linked Lists consisting of backwards numbers that need to be added, then returning another backwards Linked List of our solution. One thing that is initially a bit tricky is that the Linked Lists in the problem explanation look like arrays but they are definitely not. They are a [series of connected nodes](https://www.freecodecamp.org/news/implementing-a-linked-list-in-javascript/), that are again represented using `array[]` notation in the explanation.
 
 As in last week’s post, there are some simple and fundamental concepts we can focus on here that will drastically improve our approach and subsequently our solution, but I will wait to divulge those until we’re discussing the solution.
-
 
 ## Approaching the Problem
 
@@ -38,7 +36,6 @@ Explanation: 342 + 465 = 807.
 I immediately look at this and think easy, we just `reverse(), join(‘’)`, convert to a number, and add to get our solution. Then we can deconstruct our solution in the opposite direction.
 
 Without getting too far ahead of ourselves and spoiling anything this is the naive solution and it works, but for a variety of reasons, it will not come close to a wonderfully clean and efficient solution provided by our machine mentor.
-
 
 ## Hacking On the Problem
 
@@ -64,7 +61,6 @@ So long as our linkedList param isn’t empty or null, we should expect a `.val`
 Now that we can operate on all of the `.val` values in our lists, all we have to do is flip, add, then take the solution, and un-flip, and return, right? Well, our problem definition expects a `ListNode` object for its solution. 
 
 For this reason we have to reconstruct our reverse answer as a connected list of `ListNode`s. Easier said than done, as using our typical spread `{...object}` syntax won’t work because we’re just putting our `ListNode` objects into a regular object at that point. So we have to create a list of `ListNode()` objects and connect them all to build our solution.
-
 
 ## Solutions
 
@@ -149,6 +145,7 @@ var addTwoNumbers = function(l1, l2) {
 };
 
 ```
+
 There are so many reasons this solution is great. There’s the obvious compactness and elegance compared to my lengthier code.  It’s also just way more efficient and still very readable if you ask me.
 
 Let me say that when I fed my solution to the LLM, it gave me a high score and positive feedback for readability. However, my code suffered from poor performance, which makes sense.
